@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">CoffeeMaker</string>
+    <string name="alarm">Alarm</string>
+    <string name="turn">Turn On/Off</string>
+    <string name="temperature">Temperature</string>
+    <string name="state">Status</string>
+    <string name="about">About</string>
+    <string name="setAlarm">Set Alarm</string>
+    <string name="disableAlarm">Disable Alarm</string>
+</resources>

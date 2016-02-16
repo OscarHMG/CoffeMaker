@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/table"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TableRow
+        android:id="@+id/row1"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        >
+        <RelativeLayout
+            android:id="@+id/containter_alarm"
+            android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:background="@color/LightBrown"
+            >
+
+            <ImageView
+                android:id="@+id/alarm_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/alarm"
+                android:layout_marginTop="40dp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm"
+                android:layout_below="@+id/alarm_img"
+                android:textSize="20sp"
+                android:fontFamily=""
+                android:layout_marginTop="10dp"
+                android:layout_centerHorizontal="true"
+                />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/containter_turn"
+            android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:background="@color/LightGreen"
+            >
+            <ImageView
+                android:id="@+id/turn_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/turn_on"
+                android:layout_marginTop="40dp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/turn"
+                android:layout_below="@+id/turn_img"
+                android:layout_centerHorizontal="true"
+                android:textSize="20sp"
+                android:layout_marginTop="10dp"
+                />
+
+        </RelativeLayout>
+
+    </TableRow>
+    <TableRow
+        android:id="@+id/row2"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        >
+        <RelativeLayout
+            android:id="@+id/container_temperature"
+            android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:background="@color/LightRed"
+            >
+
+            <ImageView
+                android:id="@+id/tmp_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="40dp"
+                android:src="@drawable/temperature"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/temperature"
+                android:layout_below="@+id/tmp_img"
+                android:layout_centerHorizontal="true"
+                android:textSize="20sp"
+                android:layout_marginTop="10dp"
+                />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/containter_status"
+            android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:background="@color/LightBlue"
+            >
+
+            <ImageView
+                android:id="@+id/state_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="40dp"
+                android:src="@drawable/status"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/state"
+                android:layout_below="@+id/state_img"
+                android:layout_centerHorizontal="true"
+                android:textSize="20sp"
+                android:layout_marginTop="10dp"
+                />
+        </RelativeLayout>
+
+
+
+    </TableRow>
+    <RelativeLayout
+        android:id="@+id/containter_about"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        >
+        <ImageView
+            android:id="@+id/about_img"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/about"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="150dp"
+            android:layout_marginRight="15dp"
+           />
+
+        <TextView
+            android:id="@+id/about_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/about"
+            android:layout_toRightOf="@id/about_img"
+            android:layout_centerVertical="true"
+            android:textSize="20sp" />
+        </RelativeLayout>
+</TableLayout>
