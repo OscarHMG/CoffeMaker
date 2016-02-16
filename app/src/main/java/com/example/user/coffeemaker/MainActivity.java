@@ -1,6 +1,4 @@
 package com.example.user.coffeemaker;
-
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -8,39 +6,28 @@ import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.R;
-import android.R;
-import android.transition.Slide;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
-import com.easyandroidanimations.library.Animation;
-import com.easyandroidanimations.library.SlideInAnimation;
 import com.eftimoff.androidplayer.Player;
 import com.eftimoff.androidplayer.actions.property.PropertyAction;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.StatusLine;
-
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
-
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import xyz.hanks.library.SmallBang;
 import xyz.hanks.library.SmallBangListener;
-
-import static android.graphics.Color.RED;
 
 /**
  * Created by user on 10/02/2016.
@@ -104,6 +91,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
             switch (v.getId()) {
                 case com.example.user.coffeemaker.R.id.containter_alarm:
                     animation.bang(alarm, 260, this);
+
                     showDialog(999);
                     break;
                 case com.example.user.coffeemaker.R.id.containter_turn:
@@ -112,7 +100,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
                     break;
                 case com.example.user.coffeemaker.R.id.container_temperature:
                     animation.bang(temperature, 260, this);
-                    showDialogMessage("Current Temperature", "Temperature: 45C", SweetAlertDialog.SUCCESS_TYPE);
+
+                    new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+
                     break;
                 case com.example.user.coffeemaker.R.id.containter_status:
                     animation.bang(status, 260, this);
@@ -197,40 +187,52 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
 
     }
 
-    private void sendGet() throws Exception {
-        String USER_AGENT = "Chrome/48.0.2564.109";
-        String url = "http://www.google.com/search?q=mkyong";
 
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        // optional default is GET
-        con.setRequestMethod("GET");
+    public class JSonTask extends AsyncTask<String, String, String>{
 
-        //add request header
-        //con.setRequestProperty("User-Agent", USER_AGENT);
 
-        int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'GET' request to URL : " + url);
-        System.out.println("Response Code : " + responseCode);
-
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        StringBuffer response = new StringBuffer();
-
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
+        @Override
+        protected String doInBackground(String... params) {
+            HttpURLConnection connection = null;
+            StringBuffer buffer;
+            BufferedReader reader = null;
+            URL url;
+            InputStream stream;
+            try{
+                url = new URL(params[0]);
+                connection = (HttpURLConnection)url.openConnection();
+                connection.connect();
+                stream = connection.getInputStream();
+                reader = new BufferedReader(new InputStreamReader(stream));
+                buffer = new StringBuffer();
+                String line = "";
+                while((line = reader.readLine())!=null){
+                    buffer.append(line);
+                }
+                return buffer.toString();
+            }catch(MalformedURLException ex){
+                ex.printStackTrace();
+            }catch(IOException ioex){
+                ioex.printStackTrace();
+            }finally{
+                if(connection!=null)
+                    connection.disconnect();
+                try {
+                    if(reader!=null)
+                        reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
         }
-        in.close();
 
-        //print result
-        System.out.println(response.toString());
-
-    }
-
-    public void getTemperature() {
-
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            showDialogMessage("Current Temperature", "Temperature:"+s, SweetAlertDialog.SUCCESS_TYPE);
+        }
     }
 
 }

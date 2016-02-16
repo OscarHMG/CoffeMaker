@@ -6,6 +6,9 @@ repositories {
 apply plugin: 'com.android.application'
 
 android {
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
 
