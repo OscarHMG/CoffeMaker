@@ -5,10 +5,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.R;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.RelativeLayout;
@@ -39,7 +41,7 @@ import xyz.hanks.library.SmallBangListener;
 /**
  * Created by user on 10/02/2016.
  */
-public class MainActivity extends Activity implements View.OnClickListener, SmallBangListener {
+public  class MainActivity extends Activity implements View.OnClickListener, SmallBangListener {
     private RelativeLayout alarm, turn, temperature, status, about;
     private TableLayout menu;
     private SmallBang animation;
@@ -50,6 +52,10 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
     private PendingIntent pendingIntent;
     private ConnectionDetector connection;
     private static String typeOfOp;
+    private JSonTask task;
+    private String id;
+    private Context context;
+    JSonTask m;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +65,11 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
         connection = new ConnectionDetector(MainActivity.this);
         animation = SmallBang.attach2Window(this);
         setAnimations();
+        m = new JSonTask();
+        typeOfOp = "GET";
+        new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+
+
     }
 
     public void initElementes() {
@@ -96,27 +107,34 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
                     })
                     .show();
         } else {
+            String tmp;
             switch (v.getId()) {
                 case com.example.user.coffeemaker.R.id.containter_alarm:
                     animation.bang(alarm, 260, this);
                     typeOfOp = "POST";
+                    id="1";
                     showDialog(999);
                     break;
                 case com.example.user.coffeemaker.R.id.containter_turn:
                     animation.bang(turn, 260, this);
-                    showDialogMessage("Actual State: ON/OFF?", "Succesfully ON/OFF ?", SweetAlertDialog.SUCCESS_TYPE);
+                    String msg = (m.estado.equals("1")) ? "OFF" : "ON";
+                    showDialogMessage("CoffeeMaker", "Succesfully " +msg, SweetAlertDialog.SUCCESS_TYPE);
                     typeOfOp = "POST";
-                    new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+                    id="2";
+                    new JSonTask().execute("2");
                     break;
                 case com.example.user.coffeemaker.R.id.container_temperature:
                     animation.bang(temperature, 260, this);
                     typeOfOp = "GET";
-                    new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+                    new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/2/last.txt");
+                    showDialogMessage("Actual Temperature", m.msgGET, SweetAlertDialog.WARNING_TYPE);
                     break;
                 case com.example.user.coffeemaker.R.id.containter_status:
                     animation.bang(status, 260, this);
-                    showDialogMessage("Status", "The jug is not placed in the coffee maker?", SweetAlertDialog.WARNING_TYPE);
                     typeOfOp = "GET";
+                    new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/3/last.txt");
+                    tmp = (m.estado.equals("1")) ? "The jug is not placed in the coffee maker?" : "The jug is  placed in the coffee maker?";
+                    showDialogMessage("Status", tmp, SweetAlertDialog.WARNING_TYPE);
                     break;
                 case com.example.user.coffeemaker.R.id.containter_about:
                     animation.bang(about, 260, this);
@@ -205,35 +223,62 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
 
     }
 
-    public class JSonTask extends AsyncTask<String, String, String> {
-
-
+    public static class JSonTask extends AsyncTask<String, String, String> {
+        MainActivity mainActivity;
+        private static String finalEstado;
+        private static String estado;
+        private static int numTime = 0;
+        private static String msgGET;
         @Override
         protected String doInBackground(String... params) {
+
             if (typeOfOp.equals("GET")) {
-                return getRequest(params);
+                estado= getRequest(params);
+                Log.i("Estado Actual:", estado);
             } else {
-                postRequest();
-                return null;
+                postRequest(params);
+                //return null;
             }
+            return estado;
         }
+
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            showDialogMessage("Current Temperature", "Temperature:" + s, SweetAlertDialog.SUCCESS_TYPE);
+            //showDialogMessage("Current Temperature", "Temperature:" + s, SweetAlertDialog.SUCCESS_TYPE);
+            //Toast.makeText(getApplicationContext(),"Your Message", Toast.LENGTH_LONG).show();
+
         }
 
-        private String postRequest() {
+        public  Map<String, Object> setParams(String id) {
+            Map<String, Object> params = new LinkedHashMap<>();
+            params.put("api_key", "JOXZJ0MWXKS66ENR");
+            if (id.equals("1")) {
+                params.put("field1", "1");
+            } else if (id.equals("2")) {
+                new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+                if (estado.equals("1")) { //CoffeeMaker is ON
+                    params.put("field1", "0");
+                    estado = "0";
+                } else if (estado.equals("0") || estado.equals("-1") || estado.equals(null)){ //OFF=0; OFF at Start = -1
+                    params.put("field1", "1");
+                    estado = "1";
+                }
+                finalEstado = estado;
+                Log.i("Estado Cambiante:",estado);
+            }
+            return params;
+        }
+
+        private String postRequest(String... p) {
             URL url = null;
             try {
                 url = new URL("https://api.thingspeak.com/update");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
-            Map<String, Object> params = new LinkedHashMap<>();
-            params.put("api_key", "JOXZJ0MWXKS66ENR");
-            params.put("field1", "100");
+            Map<String, Object> params = setParams(p[0]);
 
             StringBuilder postData = new StringBuilder();
             for (Map.Entry<String, Object> param : params.entrySet()) {
@@ -289,6 +334,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            numTime++;
             return "";
         }
 
@@ -310,6 +356,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
                 while ((line = reader.readLine()) != null) {
                     buffer.append(line);
                 }
+                msgGET = buffer.toString();
                 return buffer.toString();
             } catch (MalformedURLException ex) {
                 ex.printStackTrace();
@@ -327,6 +374,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Smal
             }
             return null;
         }
+
 
     }
 
