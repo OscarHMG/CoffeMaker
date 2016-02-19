@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.R;
@@ -52,7 +53,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
     private PendingIntent pendingIntent;
     private ConnectionDetector connection;
     private static String typeOfOp;
-    private String id;
+    private static String id= "0";
     private Context context;
     protected SweetAlertDialog dialog;
     JSonTask mWorker  = new JSonTask(this);
@@ -131,15 +132,15 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                 case com.example.user.coffeemaker.R.id.container_temperature:
                     animation.bang(temperature, 260, this);
                     typeOfOp = "GET";
+                    id="3";
                     JSonTask w2= (JSonTask) new JSonTask(this).execute("http://api.thingspeak.com/channels/81636/fields/2/last.txt");
-                    showDialogMessage("Actual Temperature", mWorker.msgGET, SweetAlertDialog.WARNING_TYPE);
+
                     break;
                 case com.example.user.coffeemaker.R.id.containter_status:
                     animation.bang(status, 260, this);
                     typeOfOp = "GET";
+                    id="4";
                     JSonTask w3= (JSonTask) new JSonTask(this).execute("http://api.thingspeak.com/channels/81636/fields/3/last.txt");
-                    tmp = (mWorker.estado.equals("1")) ? "The jug is not placed in the coffee maker?" : "The jug is  placed in the coffee maker?";
-                    showDialogMessage("Status", tmp, SweetAlertDialog.WARNING_TYPE);
                     break;
                 case com.example.user.coffeemaker.R.id.containter_about:
                     animation.bang(about, 260, this);
@@ -258,6 +259,23 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+
+            switch(id){
+                case "0":
+                    mainActivity.showDialogMessage("Welcome", "", SweetAlertDialog.SUCCESS_TYPE);
+                    break;
+                case "1":
+
+                    break;
+                case "2":
+                    break;
+                case "3":
+                    mainActivity.showDialogMessage("Actual Temperature", s, SweetAlertDialog.WARNING_TYPE);
+                    break;
+                case "4":
+                    mainActivity.showDialogMessage("Status",s,SweetAlertDialog.WARNING_TYPE);
+                    break;
+            }
             //showDialogMessage("Current Temperature", "Temperature:" + s, SweetAlertDialog.SUCCESS_TYPE);
             if(!s.equals(null)){
                 //Toast.makeText(mainActivity,s, Toast.LENGTH_LONG).show();
@@ -267,13 +285,23 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
 
         }
 
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            SweetAlertDialog pDialog = new SweetAlertDialog(mainActivity, SweetAlertDialog.PROGRESS_TYPE);
+            pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+            pDialog.setTitleText("Loading");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+
         public  Map<String, Object> setParams(String id) {
             Map<String, Object> params = new LinkedHashMap<>();
             params.put("api_key", "JOXZJ0MWXKS66ENR");
             if (id.equals("1")) {
                 params.put("field1", "1");
             } else if (id.equals("2")) {
-                this.execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+                JSonTask m = (JSonTask) new JSonTask(mainActivity).execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
                 if (estado.equals("1")) { //CoffeeMaker is ON
                     params.put("field1", "0");
                     estado = "0";
