@@ -52,11 +52,12 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
     private PendingIntent pendingIntent;
     private ConnectionDetector connection;
     private static String typeOfOp;
-    private JSonTask task;
     private String id;
     private Context context;
-    JSonTask m;
+    protected SweetAlertDialog dialog;
+    JSonTask mWorker  = new JSonTask(this);
 
+    protected MainActivity m;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,11 +66,15 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
         connection = new ConnectionDetector(MainActivity.this);
         animation = SmallBang.attach2Window(this);
         setAnimations();
-        m = new JSonTask();
+        mWorker.mainActivity = this;
         typeOfOp = "GET";
-        new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+        mWorker.execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
 
 
+    }
+
+    public MainActivity() {
+        this.m = this;
     }
 
     public void initElementes() {
@@ -117,23 +122,23 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     break;
                 case com.example.user.coffeemaker.R.id.containter_turn:
                     animation.bang(turn, 260, this);
-                    String msg = (m.estado.equals("1")) ? "OFF" : "ON";
+                    String msg = (mWorker.estado.equals("1")) ? "OFF" : "ON";
                     showDialogMessage("CoffeeMaker", "Succesfully " +msg, SweetAlertDialog.SUCCESS_TYPE);
                     typeOfOp = "POST";
                     id="2";
-                    new JSonTask().execute("2");
+                    JSonTask w1= (JSonTask) new JSonTask(this).execute("2");
                     break;
                 case com.example.user.coffeemaker.R.id.container_temperature:
                     animation.bang(temperature, 260, this);
                     typeOfOp = "GET";
-                    new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/2/last.txt");
-                    showDialogMessage("Actual Temperature", m.msgGET, SweetAlertDialog.WARNING_TYPE);
+                    JSonTask w2= (JSonTask) new JSonTask(this).execute("http://api.thingspeak.com/channels/81636/fields/2/last.txt");
+                    showDialogMessage("Actual Temperature", mWorker.msgGET, SweetAlertDialog.WARNING_TYPE);
                     break;
                 case com.example.user.coffeemaker.R.id.containter_status:
                     animation.bang(status, 260, this);
                     typeOfOp = "GET";
-                    new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/3/last.txt");
-                    tmp = (m.estado.equals("1")) ? "The jug is not placed in the coffee maker?" : "The jug is  placed in the coffee maker?";
+                    JSonTask w3= (JSonTask) new JSonTask(this).execute("http://api.thingspeak.com/channels/81636/fields/3/last.txt");
+                    tmp = (mWorker.estado.equals("1")) ? "The jug is not placed in the coffee maker?" : "The jug is  placed in the coffee maker?";
                     showDialogMessage("Status", tmp, SweetAlertDialog.WARNING_TYPE);
                     break;
                 case com.example.user.coffeemaker.R.id.containter_about:
@@ -224,11 +229,18 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
     }
 
     public static class JSonTask extends AsyncTask<String, String, String> {
-        MainActivity mainActivity;
+
         private static String finalEstado;
         private static String estado;
         private static int numTime = 0;
         private static String msgGET;
+        private Context context;
+        MainActivity mainActivity;
+
+        public JSonTask(MainActivity mainActivity) {
+            this.mainActivity = mainActivity;
+        }
+
         @Override
         protected String doInBackground(String... params) {
 
@@ -247,7 +259,11 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             //showDialogMessage("Current Temperature", "Temperature:" + s, SweetAlertDialog.SUCCESS_TYPE);
-            //Toast.makeText(getApplicationContext(),"Your Message", Toast.LENGTH_LONG).show();
+            if(!s.equals(null)){
+                //Toast.makeText(mainActivity,s, Toast.LENGTH_LONG).show();
+               // mainActivity.showDialogMessage("Current Temperature", s, SweetAlertDialog.SUCCESS_TYPE);
+            }
+
 
         }
 
@@ -257,7 +273,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
             if (id.equals("1")) {
                 params.put("field1", "1");
             } else if (id.equals("2")) {
-                new JSonTask().execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
+                this.execute("http://api.thingspeak.com/channels/81636/fields/1/last.txt");
                 if (estado.equals("1")) { //CoffeeMaker is ON
                     params.put("field1", "0");
                     estado = "0";

@@ -33,7 +33,9 @@ public class RingTonePlayService extends Service {
                 .setContentIntent(pIntent)
                 .setAutoCancel(true)
                 .build();
-        new MainActivity.JSonTask().execute("1");
+        //new MainActivity.JSonTask().execute("1");
+        MainActivity mainActivity = new MainActivity();
+        mainActivity.mWorker = (MainActivity.JSonTask) new MainActivity.JSonTask(mainActivity).execute("1");
         ringtone = MediaPlayer.create(this,R.raw.jazz_ringtone);
         ringtone.setLooping(false);
         ringtone.start();
