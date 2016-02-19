@@ -16,7 +16,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TimePicker;
-import android.widget.Toast;
+
 import com.eftimoff.androidplayer.Player;
 import com.eftimoff.androidplayer.actions.property.PropertyAction;
 import java.io.BufferedReader;
@@ -123,7 +123,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     break;
                 case com.example.user.coffeemaker.R.id.containter_turn:
                     animation.bang(turn, 260, this);
-                    String msg = (mWorker.estado.equals("1")) ? " OFF" : " ON";
+                    String msg = (mWorker.status.equals("1")) ? " OFF" : " ON";
                     showDialogMessage("CoffeeMaker", "Succesfully " +msg, SweetAlertDialog.SUCCESS_TYPE);
                     typeOfOp = "POST";
                     id="2";
@@ -133,7 +133,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     animation.bang(temperature, 260, this);
                     typeOfOp = "GET";
                     id="3";
-                    JSonTask getTempTask= (JSonTask) new JSonTask(this).execute(GET_URL+"2/last.txt");
+                    JSonTask getTempTask= (JSonTask) new JSonTask(this).execute(GET_URL+"/2/last.txt");
                     break;
                 case com.example.user.coffeemaker.R.id.containter_status:
                     animation.bang(status, 260, this);
@@ -171,27 +171,26 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
     }
 
     public void setAlarm() {
-        int x =calendar.HOUR_OF_DAY;
-        int y =calendar.MINUTE;
+
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minuteOfDay);
 
-       /* String minute_string = String.valueOf(minute);
-        String hour_string = String.valueOf(hour);
+       String minute_string = String.valueOf(minuteOfDay);
+        String hour_string = String.valueOf(hourOfDay);
 
-        if (minute < 10) {
-            minute_string = "0" + String.valueOf(minute);
-        }*/
-
+        if (minuteOfDay < 10) {
+            minute_string = "0" + String.valueOf(minuteOfDay);
+        }
+        showDialogMessage("Alarm", "Alarm settings was successful at "+hour_string+":"+minute_string, SweetAlertDialog.SUCCESS_TYPE);
         pendingIntent = PendingIntent.getBroadcast(this, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
-        //Toast.makeText(this, "Alarm set to " + hour_string + ":" + minute_string, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public Dialog onCreateDialog(int id) {
         if (id == 999) {
-            return new TimePickerDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT, timePickerListener, hourOfDay, minuteOfDay, false);
+            return new TimePickerDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT,
+                    timePickerListener, calendar.getTime().getHours(), calendar.getTime().getMinutes(), false);
         }
         return null;
     }
@@ -202,7 +201,6 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
             hourOfDay =  hour;
             minuteOfDay = minute;
             setAlarm();
-            showDialogMessage("Alarm", "Alarm settings was successful ", SweetAlertDialog.SUCCESS_TYPE);
         }
     };
 
@@ -223,16 +221,9 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
 
     }
 
-    public void postValue() {
-
-    }
 
     public static class JSonTask extends AsyncTask<String, String, String> {
-
-        private static String finalEstado;
-        private static String estado;
-        private static int numTime = 0;
-        private static String msgGET;
+        private static String status;
         private Context context;
         MainActivity mainActivity;
 
@@ -244,15 +235,12 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
         protected String doInBackground(String... params) {
 
             if (typeOfOp.equals("GET")) {
-                estado= getRequest(params);
-                Log.i("Estado Actual:", estado);
+                status = getRequest(params);
             } else {
                 postRequest(params);
-                //return null;
             }
-            return estado;
+            return status;
         }
-
 
         @Override
         protected void onPostExecute(String s) {
@@ -261,7 +249,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
             switch(id){
                 case "0":
                     mainActivity.showDialogMessage("Welcome", "", SweetAlertDialog.SUCCESS_TYPE);
-                    estado= s; //App start, previosuly we have to know if the cofee maker is ON or OFF
+                    status = s; //App start, previosuly we have to know if the cofee maker is ON or OFF
                     break;
                 case "1":
 
@@ -276,23 +264,6 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     mainActivity.showDialogMessage("Status",result,SweetAlertDialog.WARNING_TYPE);
                     break;
             }
-            //showDialogMessage("Current Temperature", "Temperature:" + s, SweetAlertDialog.SUCCESS_TYPE);
-            if(!s.equals(null)){
-                //Toast.makeText(mainActivity,s, Toast.LENGTH_LONG).show();
-               // mainActivity.showDialogMessage("Current Temperature", s, SweetAlertDialog.SUCCESS_TYPE);
-            }
-
-
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            SweetAlertDialog pDialog = new SweetAlertDialog(mainActivity, SweetAlertDialog.PROGRESS_TYPE);
-            pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-            pDialog.setTitleText("Loading");
-            pDialog.setCancelable(false);
-            pDialog.show();
         }
 
         public  Map<String, Object> setParams(String id) {
@@ -301,16 +272,14 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
             if (id.equals("1")) { //Set Alarm
                 params.put("field1", "1");
             } else if (id.equals("2")) { // Turn ON or Turn OFF?
-                //JSonTask mTask = (JSonTask) new JSonTask(mainActivity).execute(GET_URL+"/1/last.txt");
-                if (estado.equals("1")) { //CoffeeMaker is ON
+                if (status.equals("1")) { //CoffeeMaker is ON
                     params.put("field1", "0");
-                    estado = "0";
-                } else if (estado.equals("0") || estado.equals("-1") || estado.equals(null)){ //OFF=0; OFF at Start = -1
+                    status = "0";
+                } else if (status.equals("0") || status.equals("-1") || status.equals(null)){ //OFF=0; OFF at Start = -1
                     params.put("field1", "1");
-                    estado = "1";
+                    status = "1";
                 }
-                //finalEstado = estado;
-                Log.i("Estado Cambiante:",estado);
+                Log.i("Estado Cambiante:", status);
             }
             return params;
         }
@@ -378,7 +347,6 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            numTime++;
             return "";
         }
 
