@@ -125,7 +125,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     typeOfOp = "POST";
                     id="2";
                     JSonTask turnTask= (JSonTask) new JSonTask(this).execute("2");
-
+                    showDialogMessage("ON/OFF", "Operation was Succesfully", SweetAlertDialog.SUCCESS_TYPE);
                     break;
                 case com.example.user.coffeemaker.R.id.container_temperature:
                     animation.bang(temperature, 260, this);
@@ -250,15 +250,17 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     break;
                 case "1":
                     status = s;
+                    id="5";
                     break;
                 case "2":
-                    String msg = (s.equals("1")) ? " ON" : " OFF";
-                    mainActivity.showDialogMessage("CoffeeMaker", "Succesfully: " + msg, SweetAlertDialog.SUCCESS_TYPE);
+                    //String msg = (s.equals("1")) ? " ON" : " OFF";
+                    //mainActivity.showDialogMessage("CoffeeMaker", "Succesfully: " + msg, SweetAlertDialog.SUCCESS_TYPE);
                     id="5";
                     return ;
                     //break;
                 case "3":
                     mainActivity.showDialogMessage("Actual Temperature", s+" °C", SweetAlertDialog.WARNING_TYPE);
+                    id="5";
                     break;
                 case "4":
                     String result = status.equals("1")?"The jar is present in Coffee Maker":"The jar isn't present in the Coffee Maker";

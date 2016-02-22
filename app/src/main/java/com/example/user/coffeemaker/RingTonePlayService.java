@@ -45,7 +45,7 @@ public class RingTonePlayService extends Service {
             ringtone = MediaPlayer.create(this,R.raw.jazz_ringtone);
             ringtone.setLooping(false);
             ringtone.start();
-
+            mNM.notify(0,mNotify);
         }else{
             mNotify  = new Notification.Builder(this)
                     .setContentTitle("Error")
@@ -55,7 +55,7 @@ public class RingTonePlayService extends Service {
                     .setAutoCancel(true)
                     .build();
             mNM.notify(0,mNotify);
-            System.exit(0);
+            //System.exit(0);
         }
         return START_NOT_STICKY;
     }
