@@ -125,8 +125,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     typeOfOp = "POST";
                     id="2";
                     JSonTask turnTask= (JSonTask) new JSonTask(this).execute("2");
-                    String msg = (mWorker.status.equals("1")) ? " OFF" : " ON";
-                    showDialogMessage("CoffeeMaker", "Succesfully: " + msg, SweetAlertDialog.SUCCESS_TYPE);
+
                     break;
                 case com.example.user.coffeemaker.R.id.container_temperature:
                     animation.bang(temperature, 260, this);
@@ -139,8 +138,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     typeOfOp = "GET";
                     id="4";
                     JSonTask getStatusTask= (JSonTask) new JSonTask(this).execute(GET_URL+"/3/last.txt");
-                    String result = mWorker.status.equals("1")?"The jar is present in Coffee Maker":"The jar isn't present in the Coffee Maker";
-                    showDialogMessage("Status",result,SweetAlertDialog.WARNING_TYPE);
+
                     break;
             }
         }
@@ -247,18 +245,26 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
             switch(id){
                 case "0":
                     mainActivity.showDialogMessage("Welcome", "", SweetAlertDialog.SUCCESS_TYPE);
+                    id="5";
                     //status = s; //App start, previosuly we have to know if the cofee maker is ON or OFF
                     break;
                 case "1":
                     status = s;
                     break;
                 case "2":
-                    break;
+                    String msg = (s.equals("1")) ? " ON" : " OFF";
+                    mainActivity.showDialogMessage("CoffeeMaker", "Succesfully: " + msg, SweetAlertDialog.SUCCESS_TYPE);
+                    id="5";
+                    return ;
+                    //break;
                 case "3":
                     mainActivity.showDialogMessage("Actual Temperature", s+" °C", SweetAlertDialog.WARNING_TYPE);
                     break;
                 case "4":
-
+                    String result = status.equals("1")?"The jar is present in Coffee Maker":"The jar isn't present in the Coffee Maker";
+                    mainActivity.showDialogMessage("Status",result,SweetAlertDialog.WARNING_TYPE);
+                    id="5";
+                    break;
             }
         }
 
