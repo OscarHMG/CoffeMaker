@@ -14,7 +14,7 @@ import android.support.annotation.Nullable;
  */
 public class RingTonePlayService extends Service {
     MediaPlayer ringtone;
-    MainActivity.JSonTask m;
+    ConnectionDetector connection;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -26,20 +26,37 @@ public class RingTonePlayService extends Service {
         final NotificationManager   mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Intent intent1 = new Intent(this.getApplicationContext(), MainActivity.class);
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent1, 0);
-        Notification mNotify  = new Notification.Builder(this)
-                .setContentTitle("Time to Live. Time to COFFEE!")
-                .setContentText("Your CoffeMaker is ready!")
-                .setSmallIcon(R.drawable.coffe_icon)
-                .setContentIntent(pIntent)
-                .setAutoCancel(true)
-                .build();
-        //new MainActivity.JSonTask().execute("1");
         MainActivity mainActivity = new MainActivity();
-        mainActivity.mWorker = (MainActivity.JSonTask) new MainActivity.JSonTask(mainActivity).execute("1");
-        ringtone = MediaPlayer.create(this,R.raw.jazz_ringtone);
-        ringtone.setLooping(false);
-        ringtone.start();
-        mNM.notify(0,mNotify);
+       // mainActivity.principalActivity.getApplicationContext();
+        //connection = new ConnectionDetector(mainActivity.principalActivity);
+        Notification mNotify=null;
+        if(mainActivity.connection.isConnectingToInternet()){
+            mNotify  = new Notification.Builder(this)
+                    .setContentTitle("Time to Live. Time to COFFEE!")
+                    .setContentText("Your CoffeMaker is ready!")
+                    .setSmallIcon(R.drawable.coffe_icon)
+                    .setContentIntent(pIntent)
+                    .setAutoCancel(true)
+                    .build();
+            //new MainActivity.JSonTask().execute("1");
+
+
+            mainActivity.mWorker = (MainActivity.JSonTask) new MainActivity.JSonTask(mainActivity.principalActivity).execute("1");
+            ringtone = MediaPlayer.create(this,R.raw.jazz_ringtone);
+            ringtone.setLooping(false);
+            ringtone.start();
+
+        }else{
+            mNotify  = new Notification.Builder(this)
+                    .setContentTitle("Error")
+                    .setContentText("Check your internet connection")
+                    .setSmallIcon(R.drawable.coffe_icon)
+                    .setContentIntent(pIntent)
+                    .setAutoCancel(true)
+                    .build();
+            mNM.notify(0,mNotify);
+            System.exit(0);
+        }
         return START_NOT_STICKY;
     }
 }

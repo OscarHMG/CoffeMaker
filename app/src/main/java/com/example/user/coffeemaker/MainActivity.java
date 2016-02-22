@@ -43,14 +43,14 @@ import xyz.hanks.library.SmallBangListener;
  */
 public  class MainActivity extends Activity implements View.OnClickListener, SmallBangListener {
     private static final int FLAG_ALARM_DIALOG =999 ;
-    private RelativeLayout alarm, turn, temperature, status, about;
+    private RelativeLayout alarm, turn, temperature, status;
     private SmallBang animation;
     private int hourOfDay, minuteOfDay;
     private AlarmManager alarmManager;
     private Calendar calendar;
     private Intent myIntent;
     private PendingIntent pendingIntent;
-    private ConnectionDetector connection;
+    protected static ConnectionDetector connection;
     private static String typeOfOp;
     private static String id= "0";
     protected SweetAlertDialog dialog;
@@ -71,8 +71,9 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
         animation = SmallBang.attach2Window(this);
         setAnimations();
         mWorker.mainActivity = this;
+        principalActivity = this;
         typeOfOp = "GET";
-        mWorker.execute(GET_URL+"/1/last.txt");
+        mWorker.execute(GET_URL + "/1/last.txt");
     }
 
     public MainActivity() {
@@ -87,13 +88,11 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
         turn = (RelativeLayout) findViewById(com.example.user.coffeemaker.R.id.containter_turn);
         temperature = (RelativeLayout) findViewById(com.example.user.coffeemaker.R.id.container_temperature);
         status = (RelativeLayout) findViewById(com.example.user.coffeemaker.R.id.containter_status);
-        about = (RelativeLayout) findViewById(com.example.user.coffeemaker.R.id.containter_about);
         myIntent = new Intent(MainActivity.this, AlarmReceiver.class);
         alarm.setOnClickListener(this);
         turn.setOnClickListener(this);
         temperature.setOnClickListener(this);
         status.setOnClickListener(this);
-        about.setOnClickListener(this);
         setDisableStatusBar();
     }
 
@@ -123,11 +122,11 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     break;
                 case com.example.user.coffeemaker.R.id.containter_turn:
                     animation.bang(turn, 260, this);
-                    String msg = (mWorker.status.equals("1")) ? " OFF" : " ON";
-                    showDialogMessage("CoffeeMaker", "Succesfully " +msg, SweetAlertDialog.SUCCESS_TYPE);
                     typeOfOp = "POST";
                     id="2";
                     JSonTask turnTask= (JSonTask) new JSonTask(this).execute("2");
+                    String msg = (mWorker.status.equals("1")) ? " OFF" : " ON";
+                    showDialogMessage("CoffeeMaker", "Succesfully: " + msg, SweetAlertDialog.SUCCESS_TYPE);
                     break;
                 case com.example.user.coffeemaker.R.id.container_temperature:
                     animation.bang(temperature, 260, this);
@@ -140,10 +139,8 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     typeOfOp = "GET";
                     id="4";
                     JSonTask getStatusTask= (JSonTask) new JSonTask(this).execute(GET_URL+"/3/last.txt");
-                    break;
-                case com.example.user.coffeemaker.R.id.containter_about:
-                    animation.bang(about, 260, this);
-
+                    String result = mWorker.status.equals("1")?"The jar is present in Coffee Maker":"The jar isn't present in the Coffee Maker";
+                    showDialogMessage("Status",result,SweetAlertDialog.WARNING_TYPE);
                     break;
             }
         }
@@ -160,7 +157,7 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
         setAnimationView(turn);
         setAnimationView(temperature);
         setAnimationView(status);
-        setAnimationView(about);
+
     }
 
     public void setAnimationView(View v) {
@@ -223,9 +220,10 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
 
 
     public static class JSonTask extends AsyncTask<String, String, String> {
-        private static String status;
+        protected static String status, actualState;
         private Context context;
         MainActivity mainActivity;
+        private static boolean flag;
 
         public JSonTask(MainActivity mainActivity) {
             this.mainActivity = mainActivity;
@@ -249,10 +247,10 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
             switch(id){
                 case "0":
                     mainActivity.showDialogMessage("Welcome", "", SweetAlertDialog.SUCCESS_TYPE);
-                    status = s; //App start, previosuly we have to know if the cofee maker is ON or OFF
+                    //status = s; //App start, previosuly we have to know if the cofee maker is ON or OFF
                     break;
                 case "1":
-
+                    status = s;
                     break;
                 case "2":
                     break;
@@ -260,94 +258,100 @@ public  class MainActivity extends Activity implements View.OnClickListener, Sma
                     mainActivity.showDialogMessage("Actual Temperature", s+" °C", SweetAlertDialog.WARNING_TYPE);
                     break;
                 case "4":
-                    String result = s.equals("1")?"The jar is present in Coffee Maker":"The jar isn't present in the Coffee Maker";
-                    mainActivity.showDialogMessage("Status",result,SweetAlertDialog.WARNING_TYPE);
-                    break;
+
             }
         }
 
         public  Map<String, Object> setParams(String id) {
             Map<String, Object> params = new LinkedHashMap<>();
             params.put("api_key", API_KEY);
+            typeOfOp = "GET";
+            String tmpStatus = null;
+            JSonTask getStatus = (JSonTask) new JSonTask(mainActivity).execute(GET_URL + "/1/last.txt");
             if (id.equals("1")) { //Set Alarm
                 params.put("field1", "1");
             } else if (id.equals("2")) { // Turn ON or Turn OFF?
                 if (status.equals("1")) { //CoffeeMaker is ON
                     params.put("field1", "0");
-                    status = "0";
-                } else if (status.equals("0") || status.equals("-1") || status.equals(null)){ //OFF=0; OFF at Start = -1
+                    status="0";
+                } else if (status.equals("0") || status.equals("-1")) { //OFF=0; OFF at Start = -1
                     params.put("field1", "1");
-                    status = "1";
+                    status="1";
+                }else if(status.equals(null)){
+                    Log.i("error:","NULL MSG" );
                 }
                 Log.i("Estado Cambiante:", status);
             }
+            typeOfOp = "POST";
             return params;
         }
 
+
+
         private String postRequest(String... p) {
-            URL url = null;
-            try {
-                url = new URL(POST_URL);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            Map<String, Object> params = setParams(p[0]);
-
-            StringBuilder postData = new StringBuilder();
-            for (Map.Entry<String, Object> param : params.entrySet()) {
-                if (postData.length() != 0) postData.append('&');
+                URL url = null;
                 try {
-                    postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+                    url = new URL(POST_URL);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                Map<String, Object> params = setParams(p[0]);
+
+                StringBuilder postData = new StringBuilder();
+                for (Map.Entry<String, Object> param : params.entrySet()) {
+                    if (postData.length() != 0) postData.append('&');
+                    try {
+                        postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    postData.append('=');
+                    try {
+                        postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+                byte[] postDataBytes = new byte[0];
+                try {
+                    postDataBytes = postData.toString().getBytes("UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                postData.append('=');
+
+                HttpURLConnection conn = null;
                 try {
-                    postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
+                    conn = (HttpURLConnection) url.openConnection();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-            byte[] postDataBytes = new byte[0];
-            try {
-                postDataBytes = postData.toString().getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+                try {
+                    conn.setRequestMethod("POST");
+                } catch (ProtocolException e) {
+                    e.printStackTrace();
+                }
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+                conn.setDoOutput(true);
+                try {
+                    conn.getOutputStream().write(postDataBytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-            HttpURLConnection conn = null;
-            try {
-                conn = (HttpURLConnection) url.openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                conn.setRequestMethod("POST");
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            }
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-            conn.setDoOutput(true);
-            try {
-                conn.getOutputStream().write(postDataBytes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            Reader in = null;
-            try {
-                in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                for (int c = in.read(); c != -1; c = in.read())
-                    System.out.print((char) c);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return "";
+                Reader in = null;
+                try {
+                    in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    for (int c = in.read(); c != -1; c = in.read())
+                        System.out.print((char) c);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return "";
         }
 
 

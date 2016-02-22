@@ -1,0 +1,60 @@
+commit 3b9d86598b90dcdc7e8d57382a9ef5016ba2aa38
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Fri Feb 19 14:02:51 2016 -0500
+
+    Fix some issues in URLS, now everything WORKS
+
+commit e9fab2e94edca9c42545de404f7f1313e8bf30c2
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Fri Feb 19 13:35:35 2016 -0500
+
+    All is Working
+
+commit f3731094aafa12bb8258d53862c715dcf7893c48
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Fri Feb 19 12:20:41 2016 -0500
+
+    Asynchronous tasks without error
+
+commit b7f595fca56b1a704ab044c5e5ce1c47f8b6509f
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Fri Feb 19 01:45:00 2016 -0500
+
+    Displaying the correct info in Alerts
+
+commit 799c1a809a32d5cbe102fbd05ca5b1d5475eac00
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Wed Feb 17 17:36:02 2016 -0500
+
+    Showing respectively Alert Dialog for each option
+
+commit ba476722b2b4d2925077f5d8a36e776f269d0a10
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Tue Feb 16 18:05:19 2016 -0500
+
+    Added POST request to thingspeak
+
+commit 679932dc03441d9dc5eb667b325ddc7402a8cd49
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Tue Feb 16 16:59:20 2016 -0500
+
+    Added HTTP Request from thingspeak
+
+commit 0eb7dd6ecdc1bde99b7d15fe065a7f943288b956
+Merge: 21f2556 841961d
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Tue Feb 16 15:15:18 2016 -0500
+
+    Merge remote-tracking branch 'origin/master'
+
+commit 21f25563d7dad436e2c44c206e04e0f5e38f099e
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Tue Feb 16 15:06:37 2016 -0500
+
+    initial commit
+
+commit 841961da50d1bb9bce9e26c62048789db10c1370
+Author: OscarHMG <oscar_mg7@hotmail.com>
+Date:   Tue Feb 16 15:01:59 2016 -0500
+
+    Initial commit
